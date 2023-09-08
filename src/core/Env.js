@@ -886,8 +886,8 @@ getJasmineRequireObj().Env = function(j$) {
       }
       throw fullMessage;
     };
-
-    this.fail = function(error) {
+```
+this.fail = function(error) {
       if (!runner.currentRunable()) {
         throw new Error(
           "'fail' was used when there was no current spec, this could be because an asynchronous test timed out"
@@ -908,17 +908,25 @@ getJasmineRequireObj().Env = function(j$) {
         }
       }
 
-      runner.currentRunable().addExpectationResult(false, {
+      const result = {
         matcherName: '',
         passed: false,
+        testPassed: false,
         expected: '',
         actual: '',
         message: message,
         error: error && error.message ? error : null
-      });
+      };
+
+      runner.currentRunable().addExpectationResult(false, result);
 
       if (config.stopSpecOnExpectationFailure) {
         throw new Error(message);
+      }
+
+      return result;
+    };
+```
       }
     };
 
