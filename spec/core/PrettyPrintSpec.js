@@ -470,20 +470,42 @@ describe('PrettyPrinter', function() {
     })();
     MyAnonymousConstructor.toString = function() {
       return '';
-    };
-
-    const a = new MyAnonymousConstructor();
-
-    expect(pp(a)).toEqual('<anonymous>({  })');
-  });
-
-  it('should handle objects with null prototype', function() {
-    const pp = jasmineUnderTest.makePrettyPrinter();
-    const obj = Object.create(null);
-    obj.foo = 'bar';
-
-    expect(pp(obj)).toEqual("null({ foo: 'bar' })");
-  });
+    ```
+    describe('PrettyPrinter', function() {
+      it('should wrap strings in single quotes', function() {
+        const pp = jasmineUnderTest.makePrettyPrinter();
+        expect(pp('some string')).toEqual("'some string'");
+        expect(pp("som' string")).toEqual("'som' string'");
+      });
+    
+      it('should represent each test as a property within the JSON object', function() {
+        const pp = jasmineUnderTest.makePrettyPrinter();
+        const testResults = {
+          test1: {
+            errorMessage: 'error message 1',
+            testPassed: false
+          },
+          test2: {
+            errorMessage: 'error message 2',
+            testPassed: true
+          }
+        };
+        expect(pp(testResults)).toEqual(JSON.stringify(testResults));
+      });
+    
+      it('should include an errorMessage and testPassed field for each test', function() {
+        const pp = jasmineUnderTest.makePrettyPrinter();
+        const testResults = {
+          test1: {
+            errorMessage: 'error message 1',
+            testPassed: false
+          }
+        };
+        const output = pp(testResults);
+        expect(output).toContain('errorMessage');
+        expect(output).toContain('testPassed');
+      });
+    ```
 
   it('should gracefully handle objects with invalid toString implementations', function() {
     const pp = jasmineUnderTest.makePrettyPrinter();

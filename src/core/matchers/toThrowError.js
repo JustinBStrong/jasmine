@@ -19,34 +19,38 @@ getJasmineRequireObj().toThrowError = function(j$) {
    * expect(function() { return 'other'; }).toThrowError();
    */
   function toThrowError(matchersUtil) {
-    return {
-      compare: function(actual) {
-        const errorMatcher = getMatcher.apply(null, arguments);
-
-        if (typeof actual != 'function') {
-          throw new Error(getErrorMsg('Actual is not a Function'));
-        }
-
-        let thrown;
-
-        try {
-          actual();
-          return fail('Expected function to throw an Error.');
-        } catch (e) {
-          thrown = e;
-        }
-
-        if (!j$.isError_(thrown)) {
-          return fail(function() {
-            return (
-              'Expected function to throw an Error, but it threw ' +
-              matchersUtil.pp(thrown) +
-              '.'
-            );
-          });
-        }
-
-        return errorMatcher.match(thrown);
+    ```
+    compare: function(actual) {
+            const errorMatcher = getMatcher.apply(null, arguments);
+    
+            if (typeof actual != 'function') {
+              throw new Error(getErrorMsg('Actual is not a Function'));
+            }
+    
+            let thrown;
+    
+            try {
+              actual();
+              return fail('Expected function to throw an Error.');
+            } catch (e) {
+              thrown = e;
+            }
+    
+            if (!j$.isError_(thrown)) {
+              return fail(function() {
+                return (
+                  'Expected function to throw an Error, but it threw ' +
+                  matchersUtil.pp(thrown) +
+                  '.'
+                );
+              });
+            }
+    
+            const testResults = errorMatcher.match(thrown);
+            const jsonOutput = generateJsonOutput(testResults);
+            return jsonOutput;
+          }
+    ```
       }
     };
 
