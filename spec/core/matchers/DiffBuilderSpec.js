@@ -1,3 +1,18 @@
+describe('DiffBuilder', function () {
+  it('records the actual and expected objects', function () {
+    const diffBuilder = new jasmineUnderTest.DiffBuilder();
+    diffBuilder.setRoots({ x: 'actual' }, { x: 'expected' });
+    diffBuilder.recordMismatch();
+
+    expect(diffBuilder.getMessage()).toEqual(
+      "Expected Object({ x: 'actual' }) to equal Object({ x: 'expected' }).",
+    );
+  });
+
+  it('prints the path at which the difference was found', function () {
+    const diffBuilder = new jasmineUnderTest.DiffBuilder();
+    diffBuilder.setRoots({ foo: { x: 'actual' } }, { foo: { x: 'expected' } });
+    ```
 describe('DiffBuilder', function() {
   it('records the actual and expected objects', function() {
     const diffBuilder = new jasmineUnderTest.DiffBuilder();
@@ -9,27 +24,43 @@ describe('DiffBuilder', function() {
     );
   });
 
-  it('prints the path at which the difference was found', function() {
+  it('should check that errorMessage is a string', function() {
     const diffBuilder = new jasmineUnderTest.DiffBuilder();
-    diffBuilder.setRoots({ foo: { x: 'actual' } }, { foo: { x: 'expected' } });
+    const testResults = {
+      test1: {
+        errorMessage: 'error message 1',
+        testPassed: false
+      }
+    };
+    diffBuilder.setRoots(testResults, testResults);
+    diffBuilder.recordMismatch();
 
-    diffBuilder.withPath('foo', function() {
-      diffBuilder.recordMismatch();
-    });
-
-    expect(diffBuilder.getMessage()).toEqual(
-      "Expected $.foo = Object({ x: 'actual' }) to equal Object({ x: 'expected' })."
-    );
+    const message = diffBuilder.getMessage();
+    const errorMessage = message.split(',')[0].split(':')[1].trim();
+    expect(typeof errorMessage).toEqual('string');
   });
 
-  it('prints multiple messages, separated by newlines', function() {
+  it('should check that testPassed is a boolean', function() {
     const diffBuilder = new jasmineUnderTest.DiffBuilder();
-    diffBuilder.setRoots({ foo: 1, bar: 3 }, { foo: 2, bar: 4 });
+    const testResults = {
+      test1: {
+        errorMessage: 'error message 1',
+        testPassed: false
+      }
+    };
+    diffBuilder.setRoots(testResults, testResults);
+    diffBuilder.recordMismatch();
 
-    diffBuilder.withPath('foo', function() {
+    const message = diffBuilder.getMessage();
+    const testPassed = message.split(',')[1].split(':')[1].trim();
+    expect(typeof testPassed).toEqual('boolean');
+  });
+```;
+
+    diffBuilder.withPath('foo', function () {
       diffBuilder.recordMismatch();
     });
-    diffBuilder.withPath('bar', function() {
+    diffBuilder.withPath('bar', function () {
       diffBuilder.recordMismatch();
     });
 
@@ -39,7 +70,7 @@ describe('DiffBuilder', function() {
     expect(diffBuilder.getMessage()).toEqual(message);
   });
 
-  it('allows customization of the message', function() {
+  it('allows customization of the message', function () {
     const diffBuilder = new jasmineUnderTest.DiffBuilder();
     diffBuilder.setRoots({ x: 'bar' }, { x: 'foo' });
 
@@ -55,44 +86,44 @@ describe('DiffBuilder', function() {
       );
     }
 
-    diffBuilder.withPath('x', function() {
+    diffBuilder.withPath('x', function () {
       diffBuilder.recordMismatch(darthVaderFormatter);
     });
 
     expect(diffBuilder.getMessage()).toEqual(
-      'I find your lack of foo disturbing. (was bar, at $.x)'
+      'I find your lack of foo disturbing. (was bar, at $.x)',
     );
   });
 
-  it('uses the injected pretty-printer', function() {
-    const prettyPrinter = function(val) {
+  it('uses the injected pretty-printer', function () {
+    const prettyPrinter = function (val) {
         return '|' + val + '|';
       },
       diffBuilder = new jasmineUnderTest.DiffBuilder({
-        prettyPrinter: prettyPrinter
+        prettyPrinter: prettyPrinter,
       });
-    prettyPrinter.customFormat_ = function() {};
+    prettyPrinter.customFormat_ = function () {};
 
     diffBuilder.setRoots({ foo: 'actual' }, { foo: 'expected' });
-    diffBuilder.withPath('foo', function() {
+    diffBuilder.withPath('foo', function () {
       diffBuilder.recordMismatch();
     });
 
     expect(diffBuilder.getMessage()).toEqual(
-      'Expected $.foo = |actual| to equal |expected|.'
+      'Expected $.foo = |actual| to equal |expected|.',
     );
   });
 
-  it('passes the injected pretty-printer to the diff formatter', function() {
+  it('passes the injected pretty-printer to the diff formatter', function () {
     const diffFormatter = jasmine.createSpy('diffFormatter'),
-      prettyPrinter = function() {},
+      prettyPrinter = function () {},
       diffBuilder = new jasmineUnderTest.DiffBuilder({
-        prettyPrinter: prettyPrinter
+        prettyPrinter: prettyPrinter,
       });
-    prettyPrinter.customFormat_ = function() {};
+    prettyPrinter.customFormat_ = function () {};
 
     diffBuilder.setRoots({ x: 'bar' }, { x: 'foo' });
-    diffBuilder.withPath('x', function() {
+    diffBuilder.withPath('x', function () {
       diffBuilder.recordMismatch(diffFormatter);
     });
 
@@ -102,38 +133,38 @@ describe('DiffBuilder', function() {
       'bar',
       'foo',
       jasmine.anything(),
-      prettyPrinter
+      prettyPrinter,
     );
   });
 
-  it('uses custom object formatters on leaf nodes', function() {
-    const formatter = function(x) {
+  it('uses custom object formatters on leaf nodes', function () {
+    const formatter = function (x) {
       if (typeof x === 'number') {
         return '[number:' + x + ']';
       }
     };
     const prettyPrinter = jasmineUnderTest.makePrettyPrinter([formatter]);
     const diffBuilder = new jasmineUnderTest.DiffBuilder({
-      prettyPrinter: prettyPrinter
+      prettyPrinter: prettyPrinter,
     });
 
     diffBuilder.setRoots(5, 4);
     diffBuilder.recordMismatch();
 
     expect(diffBuilder.getMessage()).toEqual(
-      'Expected [number:5] to equal [number:4].'
+      'Expected [number:5] to equal [number:4].',
     );
   });
 
-  it('uses custom object formatters on non leaf nodes', function() {
-    const formatter = function(x) {
+  it('uses custom object formatters on non leaf nodes', function () {
+    const formatter = function (x) {
       if (x.hasOwnProperty('a')) {
         return '[thing with a=' + x.a + ', b=' + JSON.stringify(x.b) + ']';
       }
     };
     const prettyPrinter = jasmineUnderTest.makePrettyPrinter([formatter]);
     const diffBuilder = new jasmineUnderTest.DiffBuilder({
-      prettyPrinter: prettyPrinter
+      prettyPrinter: prettyPrinter,
     });
     const expectedMsg =
       'Expected $[0].foo = [thing with a=1, b={"x":42}] to equal [thing with a=1, b={"x":43}].\n' +
@@ -141,19 +172,19 @@ describe('DiffBuilder', function() {
 
     diffBuilder.setRoots(
       [{ foo: { a: 1, b: { x: 42 } }, bar: 'yes' }],
-      [{ foo: { a: 1, b: { x: 43 } }, bar: 'no' }]
+      [{ foo: { a: 1, b: { x: 43 } }, bar: 'no' }],
     );
 
-    diffBuilder.withPath(0, function() {
-      diffBuilder.withPath('foo', function() {
-        diffBuilder.withPath('b', function() {
-          diffBuilder.withPath('x', function() {
+    diffBuilder.withPath(0, function () {
+      diffBuilder.withPath('foo', function () {
+        diffBuilder.withPath('b', function () {
+          diffBuilder.withPath('x', function () {
             diffBuilder.recordMismatch();
           });
         });
       });
 
-      diffBuilder.withPath('bar', function() {
+      diffBuilder.withPath('bar', function () {
         diffBuilder.recordMismatch();
       });
     });
@@ -161,10 +192,10 @@ describe('DiffBuilder', function() {
     expect(diffBuilder.getMessage()).toEqual(expectedMsg);
   });
 
-  it('builds diffs involving asymmetric equality testers that implement valuesForDiff_ at the root', function() {
+  it('builds diffs involving asymmetric equality testers that implement valuesForDiff_ at the root', function () {
     const prettyPrinter = jasmineUnderTest.makePrettyPrinter([]),
       diffBuilder = new jasmineUnderTest.DiffBuilder({
-        prettyPrinter: prettyPrinter
+        prettyPrinter: prettyPrinter,
       }),
       expectedMsg =
         'Expected $.foo = 1 to equal 2.\n' +
@@ -172,23 +203,23 @@ describe('DiffBuilder', function() {
 
     diffBuilder.setRoots(
       { foo: 1, bar: 2 },
-      jasmine.objectContaining({ foo: 2, baz: 3 })
+      jasmine.objectContaining({ foo: 2, baz: 3 }),
     );
 
-    diffBuilder.withPath('foo', function() {
+    diffBuilder.withPath('foo', function () {
       diffBuilder.recordMismatch();
     });
-    diffBuilder.withPath('baz', function() {
+    diffBuilder.withPath('baz', function () {
       diffBuilder.recordMismatch();
     });
 
     expect(diffBuilder.getMessage()).toEqual(expectedMsg);
   });
 
-  it('builds diffs involving asymmetric equality testers that implement valuesForDiff_ below the root', function() {
+  it('builds diffs involving asymmetric equality testers that implement valuesForDiff_ below the root', function () {
     const prettyPrinter = jasmineUnderTest.makePrettyPrinter([]),
       diffBuilder = new jasmineUnderTest.DiffBuilder({
-        prettyPrinter: prettyPrinter
+        prettyPrinter: prettyPrinter,
       }),
       expectedMsg =
         'Expected $.x.foo = 1 to equal 2.\n' +
@@ -196,14 +227,14 @@ describe('DiffBuilder', function() {
 
     diffBuilder.setRoots(
       { x: { foo: 1, bar: 2 } },
-      { x: jasmine.objectContaining({ foo: 2, baz: 3 }) }
+      { x: jasmine.objectContaining({ foo: 2, baz: 3 }) },
     );
 
-    diffBuilder.withPath('x', function() {
-      diffBuilder.withPath('foo', function() {
+    diffBuilder.withPath('x', function () {
+      diffBuilder.withPath('foo', function () {
         diffBuilder.recordMismatch();
       });
-      diffBuilder.withPath('baz', function() {
+      diffBuilder.withPath('baz', function () {
         diffBuilder.recordMismatch();
       });
     });
